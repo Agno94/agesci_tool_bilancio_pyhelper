@@ -1,7 +1,11 @@
+import time
 import sys
 
 from agesci_tool_bilancio_pyhelper import ToolBilancioClient
 from agesci_tool_bilancio_pyhelper import ContoCassa
+from agesci_tool_bilancio_pyhelper import VoceBilancio
+from agesci_tool_bilancio_pyhelper import DettagliVoce
+from agesci_tool_bilancio_pyhelper import create_localized_datetime
 
 # Importo codice censimento e password da un file locale
 from local import CODICE_SOCIO
@@ -32,7 +36,26 @@ if categoria is None:
 
 print('Trovato categoria censimento:', categoria)
 
-# TODO: Upload voce di prova
+# Esempio upload singola voce per prova
+numero_risultati, conti = client.get_conti_by_params(label="Cassa LC")
+conto_cassa_lc = conti[0]
+print('Uso conto:', conto_cassa_lc)
+
+mezzanotte_20240101 = create_localized_datetime(2024, 1, 1)
+
+voce_di_prova = VoceBilancio(
+    descrizione=f'prova inserimento {time.time():.3f} da eliminare',
+    conto=conto_cassa_lc,
+    categoria=categoria,
+    data_operazione=mezzanotte_20240101,
+    dati_entrata=DettagliVoce(
+        importo=0.01,
+        idtipo=1,
+    ),
+)
+
+voce_inserita = client.post_voce(voce_di_prova)
+print('Inserito:', voce_inserita)
 
 # TODO: Lettura file csv
 
