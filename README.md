@@ -15,13 +15,15 @@ Alcuni termini usate negli endpoint e nei payload:
 1. rendiconto/rendicontoid e affini: si intende un anno di esercizio/di bilancio, ad esempio l'anno di esercizio/bilancio 2023-2024 è identificato da rendicontoid = 3.
 2. incarico e accesso: è una tripletta di 3 valori interi che identificano il ruolo/l'incarico/le autorizzazioni di un certo socio, si accompagnano a delle informazioni su unità, gruppo, zona, regione di appartenenza. Ad esempio possono identificare "essere incaricato tesoriere di gruppo per il gruppo X, zona, Y, regione Z" oppure "essere capo unità dell'unità U, gruppo X, zona Y, regione Z", eccetera...
 3. conto: un conto corrente o una cassa contanti o una carta prepagate. Gli stessi oggetti che trovate nella pagina "Configura Conti" del portale
-3. voci: tutte le operazioni che vengono inserite nella pagina "Prima Nota", ovvero ogni voce di entrata o di uscita da un conto
+4. voci: tutte le operazioni che vengono inserite nella pagina "Prima Nota", ovvero ogni voce di entrata o di uscita da un conto
+5. categorie: si tratta di una etichetta che può essere applicata ad ogni voce/operazione
 
 Per gestire in python questi oggetti ho sviluppato delle classi:
 1. `AnnoEsercizio`
 2. `DescrizioneAccesso`
 3. `ContoCassa`
 4. `VoceBilancio`
+5. `Categoria`
 
 #### Login e load dati
 
