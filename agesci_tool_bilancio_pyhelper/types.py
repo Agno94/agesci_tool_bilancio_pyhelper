@@ -1,10 +1,9 @@
 import datetime
-import pytz
 from dataclasses import dataclass, asdict, fields
 from typing import Any, Optional, Self
 
-
-ROME = pytz.timezone('Europe/Rome')
+from .utils import ROME
+from .utils import parse_nullable_isoformat_datetime
 
 
 @dataclass(slots=True)
@@ -72,9 +71,9 @@ class AnnoEsercizio():
     def from_payload_item(cls, raw_payload: dict):
         return cls(
             id=raw_payload['value'],
-            start=ROME.localize(datetime.datetime.fromisoformat(raw_payload['start'])),
-            end=ROME.localize(datetime.datetime.fromisoformat(raw_payload['end'])),
-            edit_until=ROME.localize(datetime.datetime.fromisoformat(raw_payload['lastDateForEdit'])),
+            start=parse_nullable_isoformat_datetime(raw_payload['start']),
+            end=parse_nullable_isoformat_datetime(raw_payload['end']),
+            edit_until=parse_nullable_isoformat_datetime(raw_payload['lastDateForEdit']),
             longlabel=raw_payload['sstart'] + '-' + raw_payload['send'],
         )
 
@@ -128,16 +127,8 @@ class ContoCassa:
 
     @classmethod
     def from_payload(cls, data: dict):
-
-        if (date_raw := data.get("data_inizio_attivita")) is not None:
-            data_inizio_attivita = ROME.localize(datetime.datetime.fromisoformat(date_raw))
-        else:
-            data_inizio_attivita = None
-
-        if (date_raw := data.get("data_fine_attivita")) is not None:
-            data_fine_attivita = ROME.localize(datetime.datetime.fromisoformat(date_raw))
-        else:
-            data_fine_attivita = None
+        data_inizio_attivita = parse_nullable_isoformat_datetime(data.get("data_inizio_attivita"))
+        data_fine_attivita = parse_nullable_isoformat_datetime(data.get("data_fine_attivita"))
 
         # Mappa gli idtipoconto alle rispettive stringhe, ricavata da /api/conto/tipi_conto
         tipo_conto_str_by_integer_map = {
@@ -296,8 +287,8 @@ class VoceBilancio:
             descrizione=raw_payload['descrizione'],
             conto=conto,
             categoria=categoria,
-            data_operazione=datetime.datetime.fromisoformat(raw_payload['data_operazione']),
-            data_inserimento=datetime.datetime.fromisoformat(raw_payload['data_inserimento']),
+            data_operazione=parse_nullable_isoformat_datetime(raw_payload['data_operazione']),
+            data_inserimento=parse_nullable_isoformat_datetime(raw_payload['data_inserimento']),
             dati_entrata=dati_entrata,
             dati_uscita=dati_uscita,
             saldo=raw_payload.get('saldo'),

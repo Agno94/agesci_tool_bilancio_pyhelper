@@ -1,5 +1,4 @@
 import json
-import pytz
 import datetime
 from typing import Optional, Union
 
@@ -10,6 +9,9 @@ from .errors import ToolBilancioHttpError
 from .errors import ToolBilancioNoLoginError
 from .errors import ToolBilancioResponseError
 
+from .utils import utcnow
+from .utils import ROME
+
 from .types import AnnoEsercizio
 from .types import VoceBilancio
 from .types import Categoria
@@ -18,12 +20,6 @@ from .types import DescrizioneAccesso
 
 
 API_BASE_URL = 'https://bilancio.agesci.it/api'
-UTC = pytz.utc
-ROME = pytz.timezone('Europe/Rome')
-
-
-def utcnow():
-    return datetime.datetime.now(UTC).replace(tzinfo=None)
 
 
 class ToolBilancioClient:
