@@ -9,6 +9,7 @@ from .errors import ToolBilancioHttpError
 from .errors import ToolBilancioNoLoginError
 
 from .types import AnnoEsercizio
+from .types import Categoria
 from .types import ContoCassa
 from .types import DescrizioneAccesso
 
@@ -40,6 +41,8 @@ class ToolBilancioClient:
         self.anno_esercizio_active: Optional[AnnoEsercizio] = None
         # Altributo conti(casse/banche)
         self.conti: list[ContoCassa] = []
+        # Altributo categorie
+        self.categorie: list[Categoria] = []
 
     def login_and_load(self):
         # Login
@@ -48,6 +51,8 @@ class ToolBilancioClient:
         self.load_anni_esercizio()
         # Inizializzazione conti(casse/banche)
         self.load_conti()
+        # Inizializzazione categorie
+        self.load_categorie()
 
     def login(self):
         url = f'{API_BASE_URL}/login'
@@ -158,7 +163,25 @@ class ToolBilancioClient:
 
         print(f'Trovati {len(self.conti)} conti/casse attive')
 
-    def get_conto_by_params(
+    def load_categorie(self):
+        if not self.is_authenticated():
+            raise ToolBilancioNoLoginError()
+
+        payload = {
+            **self.accesso_incarico_active.to_payload(),
+            **self.anno_esercizio_active.to_payload(),
+        }
+
+        response = self.session.post(
+            url=f'{API_BASE_URL}/vocecassa/categorie',
+            json=payload
+        )
+        categorie_raw = response.json()
+        self.categorie = list(map(Categoria.from_payload, categorie_raw))
+
+        print(f'Trovati {len(self.categorie)} categorie')
+
+    def get_conti_by_params(
         self,
         id: Optional[int] = None,
         label: Optional[str] = None,
@@ -180,6 +203,20 @@ class ToolBilancioClient:
 
         conti_selezionati = list(filter(filtro, self.conti))
         return len(conti_selezionati), conti_selezionati
+
+    def get_categorie_by_params(
+        self,
+        id: Optional[int] = None,
+        label: Optional[str] = None,
+    ) -> Optional[Categoria]:
+        def filtro(conto: Categoria):
+            if id is not None and id != conto.id:
+                return False
+            if label is not None and label != conto.label:
+                return False
+            return True
+
+        return next(filter(filtro, self.categorie), None)
 
     def post_voce(conto: ContoCassa):
         pass

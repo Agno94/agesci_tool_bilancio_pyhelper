@@ -3,7 +3,7 @@ import sys
 from agesci_tool_bilancio_pyhelper import ToolBilancioClient
 from agesci_tool_bilancio_pyhelper import ContoCassa
 
-# Importo codice e password da un file locale
+# Importo codice censimento e password da un file locale
 from local import CODICE_SOCIO
 from local import BUONASTRADA_PASSWORD
 
@@ -17,7 +17,7 @@ if not client.is_authenticated():
     sys.exit(1)
 
 # Esempio di come trovare un conto bancario (supponendo sia il solo)
-numero_risultati, conti = client.get_conto_by_params(tipoconto="Banca")
+numero_risultati, conti = client.get_conti_by_params(tipoconto="Banca")
 if numero_risultati == 1:
     conto_banca: ContoCassa = conti[0]
 else:
@@ -25,7 +25,14 @@ else:
 
 print('Trovato conto_banca', conto_banca)
 
-# TODO: Trovare categoria
+# Esempio di come trovare un categoria
+categoria = client.get_categorie_by_params(label="Gruppo / Censimenti")
+if categoria is None:
+    raise Exception('Errore cercando la categorie corretta')
+
+print('Trovato categoria censimento:', categoria)
+
+# TODO: Upload voce di prova
 
 # TODO: Lettura file csv
 
