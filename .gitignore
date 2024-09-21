@@ -5,4 +5,5 @@ __pycache__/
 .env
 .vscode/
 *.http
-local.py
+*local.py
+*.csv
