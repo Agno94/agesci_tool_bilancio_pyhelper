@@ -1,3 +1,4 @@
+import json
 import pytz
 import datetime
 from typing import Optional, Union
@@ -7,8 +8,10 @@ import jwt
 
 from .errors import ToolBilancioHttpError
 from .errors import ToolBilancioNoLoginError
+from .errors import ToolBilancioResponseError
 
 from .types import AnnoEsercizio
+from .types import VoceBilancio
 from .types import Categoria
 from .types import ContoCassa
 from .types import DescrizioneAccesso
@@ -218,5 +221,30 @@ class ToolBilancioClient:
 
         return next(filter(filtro, self.categorie), None)
 
-    def post_voce(conto: ContoCassa):
-        pass
+    def post_voce(self, vocebilancio: VoceBilancio):
+        conto = vocebilancio.conto
+        if conto is None:
+            raise ValueError
+
+        payload = {
+            'vocecassa': vocebilancio.payload_for_post(),
+            'req': {
+                **self.accesso_incarico_active.to_payload(),
+                **self.anno_esercizio_active.to_payload(),
+                'contoid': conto.id,
+            },
+        }
+
+        response = self.session.post(
+            url=f'{API_BASE_URL}/vocecassa/save',
+            json=payload,
+        )
+        voce_raw = response.json()
+
+        try:
+            inserted_voce = VoceBilancio.from_payload(voce_raw, self.conti, self.categorie)
+        except Exception:
+            print(f'POST di voce potrebbe essere fallito, parsing non riuscito:\n{json.dumps(voce_raw, indent=1)}')
+            raise ToolBilancioResponseError('Parsing riposta fallito')
+
+        return inserted_voce

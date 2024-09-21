@@ -4,3 +4,7 @@ class ToolBilancioHttpError(Exception):
 
 class ToolBilancioNoLoginError(Exception):
     pass
+
+
+class ToolBilancioResponseError(Exception):
+    pass

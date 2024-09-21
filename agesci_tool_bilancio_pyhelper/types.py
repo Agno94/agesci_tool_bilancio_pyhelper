@@ -223,7 +223,7 @@ class DettagliVoce:
 
     @classmethod
     def to_prefixed_dict(cls, prefix, dettagli_voce: Optional[Self]) -> dict:
-        base_keys = (f.names for f in fields(cls) if f.name != 'tipo_ministero_id')
+        base_keys = (f.name for f in fields(cls) if f.name != 'tipo_ministero_id')
         if dettagli_voce is None:
             return {f'{prefix}_{key}': None for key in base_keys}
         else:
@@ -239,9 +239,9 @@ class DettagliVoce:
                 return None
             return cls(
                 importo=raw_payload['e_importo'],
-                id_tipo=raw_payload['e_idtipo'],
-                codice_tipo=raw_payload.get('e_codicetipo'),
-                descrizione_tipo=raw_payload.get('e_descrizionetipo'),
+                idtipo=raw_payload['e_idtipo'],
+                codicetipo=raw_payload.get('e_codicetipo'),
+                descrizionetipo=raw_payload.get('e_descrizionetipo'),
                 tipo_ministero_id=raw_payload.get('tipoEntrataMinisteroId')
             )
         if prefix == 'u':
@@ -249,9 +249,9 @@ class DettagliVoce:
                 return None
             return cls(
                 importo=raw_payload['u_importo'],
-                id_tipo=raw_payload['u_idtipo'],
-                codice_tipo=raw_payload.get('u_codicetipo'),
-                descrizione_tipo=raw_payload.get('u_descrizionetipo'),
+                idtipo=raw_payload['u_idtipo'],
+                codicetipo=raw_payload.get('u_codicetipo'),
+                descrizionetipo=raw_payload.get('u_descrizionetipo'),
                 tipo_ministero_id=raw_payload.get('tipoUscitaMinisteroId')
             )
         raise ValueError()
