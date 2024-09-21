@@ -1,7 +1,7 @@
-import pytz
 import datetime
-from dataclasses import dataclass, asdict
-from typing import Any, Optional
+import pytz
+from dataclasses import dataclass, asdict, fields
+from typing import Any, Optional, Self
 
 
 ROME = pytz.timezone('Europe/Rome')
@@ -199,5 +199,127 @@ class ContoCassa:
 
 
 @dataclass(slots=True)
+class Categoria:
+    id: int
+    label: str
+    nomeUnita: Any = None  # Qui hanno cambiato della logica, mi sono un po' perso, mettere null funziona
+
+    @classmethod
+    def from_payload(cls, raw_payload: dict):
+        return cls(
+            id=raw_payload['value'],
+            label=raw_payload['label'],
+            nomeUnita=raw_payload.get('nomeUnita'),
+        )
+
+
+@dataclass(slots=True)
+class DettagliVoce:
+    importo: float
+    idtipo: Optional[int] = None
+    codicetipo: Optional[str] = None
+    descrizionetipo: Optional[str] = None
+    tipo_ministero_id: Optional[int] = None
+
+    @classmethod
+    def to_prefixed_dict(cls, prefix, dettagli_voce: Optional[Self]) -> dict:
+        base_keys = (f.names for f in fields(cls) if f.name != 'tipo_ministero_id')
+        if dettagli_voce is None:
+            return {f'{prefix}_{key}': None for key in base_keys}
+        else:
+            return {
+                f'{prefix}_{key}': getattr(dettagli_voce, key, None)
+                for key in base_keys
+            }
+
+    @classmethod
+    def from_voce_payload(cls, prefix: str, raw_payload: dict) -> Optional[Self]:
+        if prefix == 'e':
+            if raw_payload.get('e_importo') is None:
+                return None
+            return cls(
+                importo=raw_payload['e_importo'],
+                id_tipo=raw_payload['e_idtipo'],
+                codice_tipo=raw_payload.get('e_codicetipo'),
+                descrizione_tipo=raw_payload.get('e_descrizionetipo'),
+                tipo_ministero_id=raw_payload.get('tipoEntrataMinisteroId')
+            )
+        if prefix == 'u':
+            if raw_payload.get('u_importo') is None:
+                return None
+            return cls(
+                importo=raw_payload['u_importo'],
+                id_tipo=raw_payload['u_idtipo'],
+                codice_tipo=raw_payload.get('u_codicetipo'),
+                descrizione_tipo=raw_payload.get('u_descrizionetipo'),
+                tipo_ministero_id=raw_payload.get('tipoUscitaMinisteroId')
+            )
+        raise ValueError()
+
+
+@dataclass(slots=True)
 class VoceBilancio:
-    pass
+    id: Optional[int] = None
+    descrizione: str = ''
+    conto: Optional[ContoCassa] = None
+    categoria: Optional[Categoria] = None
+    data_operazione: Optional[datetime.datetime] = None
+    data_inserimento: Optional[datetime.datetime] = None
+    dati_entrata: Optional[DettagliVoce] = None
+    dati_uscita: Optional[DettagliVoce] = None
+    saldo: Optional[float] = None
+    is_saldoiniziale: Optional[bool] = None
+    is_saldoiniziale_manuale: Optional[bool] = None
+    # I campi seguenti sono prensenti nel payload ma non ho capito a che servano
+    isdummy: Optional[bool] = None
+    consolidata: Optional[bool] = None
+    contanti: Optional[bool] = None
+    cassa: Optional[float] = None
+    banca: Optional[float] = None
+
+    @classmethod
+    def from_payload(
+            cls, raw_payload: dict, lista_conti: list[ContoCassa], lista_categorie: list[Categoria]):
+
+        # Costruiamo i dati di entrata e uscita, se presenti
+        dati_entrata = DettagliVoce.from_voce_payload('e', raw_payload)
+        dati_uscita = DettagliVoce.from_voce_payload('u', raw_payload)
+
+        idconto = raw_payload['idconto']
+        idcategoria = raw_payload.get('idcategoria')
+
+        conto = next((conto for conto in lista_conti if conto.id == idconto), None)
+        categoria = next((cat for cat in lista_categorie if cat.id == idcategoria), None)
+
+        return cls(
+            id=raw_payload['id'],
+            descrizione=raw_payload['descrizione'],
+            conto=conto,
+            categoria=categoria,
+            data_operazione=datetime.datetime.fromisoformat(raw_payload['data_operazione']),
+            data_inserimento=datetime.datetime.fromisoformat(raw_payload['data_inserimento']),
+            dati_entrata=dati_entrata,
+            dati_uscita=dati_uscita,
+            saldo=raw_payload.get('saldo'),
+            is_saldoiniziale=raw_payload.get('is_saldoiniziale'),
+            is_saldoiniziale_manuale=raw_payload.get('is_saldoiniziale_manuale'),
+            isdummy=raw_payload.get('isdummy'),
+            consolidata=raw_payload.get('consolidata'),
+            contanti=raw_payload.get('contanti'),
+            cassa=raw_payload.get('cassa'),
+            banca=raw_payload.get('banca'),
+        )
+
+    def payload_for_post(self) -> dict:
+        payload_entrata = DettagliVoce.to_prefixed_dict('e', self.dati_entrata)
+        payload_uscita = DettagliVoce.to_prefixed_dict('e', self.dati_entrata)
+
+        return {
+            "idconto": self.conto.id,
+            "conto": self.conto.label,
+            "descrizione": self.descrizione,
+            "idcategoria": self.categoria.id,
+            "data_operazione": self.data_operazione.isoformat(),
+            **payload_entrata,
+            **payload_uscita,
+        }
