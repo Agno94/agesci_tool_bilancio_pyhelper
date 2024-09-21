@@ -1,0 +1,226 @@
+@hostname = https://bilancio.agesci.it
+
+# @authToken = {{login_user2.response.body.$.accessToken}}
+@authToken = {{login_user1.response.body.$.accessToken}}
+
+###
+# @name login_user1
+POST {{hostname}}/api/login
+Content-Type: application/json; charset=utf-8
+Host: bilancio.agesci.it
+
+{"username":"1234567","password":"1234567"}
+
+###
+@authToken = {{login_user1.response.body.$.accessToken}}
+
+###
+# @name login_user2
+POST {{hostname}}/api/login
+Content-Type: application/json; charset=utf-8
+Host: bilancio.agesci.it
+
+{"username":"1234567","password":"1234567"}
+
+
+### GET ANNI ESERCIZIO
+# (e.g. "Rendiconto 2023-24") == 3)
+GET {{hostname}}/api/rendiconto/list
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### GET TIPI CONTO
+GET {{hostname}}/api/conto/tipi_conto
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+
+### GET LISTA CONTI
+POST {{hostname}}/api/conto/listbyparams
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "codicesocio": 1234567,
+  "tipoIncaricoMain": 0,
+  "tipoIncarico": 2,
+  "accessoTipo": 4,
+  "codiceUnita": null,
+  "creg": "Z",
+  "czona": 17,
+  "gruppozona_nome": "",
+  "nomeRegione": "",
+  "nomeZona": "",
+  "nomeGruppo": "",
+  "ord": 123,
+  "unita_nome": null,
+  "rendicontoid": 3,
+  "contoid": 0,
+  "loadAllByZona": false
+}
+
+
+### GET SINGOLO CONT0
+POST {{hostname}}/api/conto/listbyparams
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "codicesocio": 1234567,
+  "tipoIncaricoMain": 0,
+  "tipoIncarico": 2,
+  "accessoTipo": 4,
+  "codiceUnita": null,
+  "creg": "Z",
+  "czona": 17,
+  "gruppozona_nome": "",
+  "nomeRegione": "",
+  "nomeZona": "",
+  "nomeGruppo": "",
+  "ord": 123,
+  "unita_nome": null,
+  "rendicontoid": 3,
+  "contoid": 12345,
+  "loadAllByZona": false
+}
+
+
+### GET LISTA VOCI
+POST {{hostname}}/api/vocecassa/listbyparams
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  // Payload accesso
+  "contoid": 0,
+}
+
+
+### GET LISTA VOCI per 1 conto
+POST {{hostname}}/api/vocecassa/listbyparams
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  // payload accesso
+  "contoid": 12345,
+}
+
+
+### POST NUOVA VOCE
+POST {{hostname}}/api/vocecassa/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "req": {
+    // payload accesso
+  },
+  "vocecassa": {
+    "idconto": 12344,
+    "data_operazione": "2024-09-10T00:00:00.000Z",
+    "e_importo": null,
+    "u_importo": 0.12,
+    "e_idtipo": null,
+    "u_idtipo": 35,
+    "descrizione": "Prova descrizione",
+    "idcategoria": 14731,
+    "u_descrizionetipo": "Oneri e servizi bancari",
+    "conto": "Cassa Gruppo"
+  }
+}
+
+
+### PATCH VOCE ESISTENTE
+POST {{hostname}}/api/vocecassa/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "req": {
+    // payload accesso
+  },
+  "vocecassa": {
+    "id": 123456,
+    "idconto": 12345,
+    "idcontoDummy": null,
+    "idcontoParent": null,
+    "conto": "Conto Banca",
+    "contoDummy": null,
+    "idtipoconto": 2,
+    "tipoconto": "Banca",
+    "idcategoria": 2908,
+    "categoria": "Gruppo / Attività",
+    "data_operazione": "2023-10-17T00:00:00.000Z",
+    "data_inserimento": "2023-10-28T01:43:38.2",
+    "descrizione": "Descrizione",
+    "e_importo": 0,
+    "e_idtipo": null,
+    "e_codicetipo": null,
+    "e_descrizionetipo": null,
+    "tipoEntrataMinisteroId": null,
+    "u_importo": 90.97,
+    "u_idtipo": 32,
+    "u_codicetipo": "A.2",
+    "u_descrizionetipo": "Spese per attività/cacce/uscite e per vacanze di branco/cerchio, campi di reparto o route",
+    "tipoUscitaMinisteroId": 2,
+    "unita_codice": null,
+    "unita_nome": null,
+    "gruppo_zona_nome": "",
+    "regione_codice": "",
+    "zona_codice": 17,
+    "ordinale": 123,
+    "nomeRegione": "",
+    "nomeZona": "",
+    "nomeGruppo": "",
+    "saldo": 1234.56,
+    "is_saldoiniziale": false,
+    "is_saldoiniziale_manuale": false,
+    "isdummy": false,
+    "consolidata": false,
+    "contanti": false,
+    "cassa": null,
+    "banca": null
+  }
+}
+
+
+###
+## GET CATEGORIE
+POST {{hostname}}/api/vocecassa/categorie
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  // ..
+}
+
+
+###
+# POST CATEGORIA
+POST {{hostname}}/api/vocecassa/saveCategoria
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "req": {
+    // Payload accesso
+  },
+  "categoria": {
+    "label": "Prova"
+  }
+}
+
+
+###
+## Eliminazione
+POST {{hostname}}/api/vocecassa/delete
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "req": {
+    // payload accesso
+  },
+  "voceCassaToDeleteId": 123456
+}
