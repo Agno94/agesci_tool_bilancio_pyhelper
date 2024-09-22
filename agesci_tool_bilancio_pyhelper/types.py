@@ -303,7 +303,7 @@ class VoceBilancio:
 
     def payload_for_post(self) -> dict:
         payload_entrata = DettagliVoce.to_prefixed_dict('e', self.dati_entrata)
-        payload_uscita = DettagliVoce.to_prefixed_dict('e', self.dati_entrata)
+        payload_uscita = DettagliVoce.to_prefixed_dict('u', self.dati_uscita)
 
         return {
             "idconto": self.conto.id,
