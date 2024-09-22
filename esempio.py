@@ -60,6 +60,9 @@ voce_di_prova = VoceBilancio(
 voce_inserita = client.post_voce(voce_di_prova)
 print('Inserito:', voce_inserita)
 
+# Esempio eliminazione voce di prova
+client.delete_voce(voce_inserita.id, debug=True)
+
 # Esempio lettura file csv e upload voci
 # Parto da un csv con queste header "Branca,Data Contabile,Data Valuta,Importo,Nota"
 

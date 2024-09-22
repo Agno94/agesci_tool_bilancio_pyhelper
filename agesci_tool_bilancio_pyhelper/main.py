@@ -217,7 +217,7 @@ class ToolBilancioClient:
 
         return next(filter(filtro, self.categorie), None)
 
-    def post_voce(self, vocebilancio: VoceBilancio):
+    def post_voce(self, vocebilancio: VoceBilancio, debug: bool = False):
         conto = vocebilancio.conto
         if conto is None:
             raise ValueError
@@ -230,12 +230,16 @@ class ToolBilancioClient:
                 'contoid': conto.id,
             },
         }
+        if debug:
+            print('Invio payload:', json.dumps(payload))
 
         response = self.session.post(
             url=f'{API_BASE_URL}/vocecassa/save',
             json=payload,
         )
         voce_raw = response.json()
+        if debug:
+            print('Ricevuto payload', json.dumps(voce_raw))
 
         try:
             inserted_voce = VoceBilancio.from_payload(voce_raw, self.conti, self.categorie)
@@ -244,3 +248,34 @@ class ToolBilancioClient:
             raise ToolBilancioResponseError('Parsing riposta fallito')
 
         return inserted_voce
+
+    def delete_voce(self, voceid: int, debug: bool = False):
+        payload = {
+            'req': {
+                **self.accesso_incarico_active.to_payload(),
+                **self.anno_esercizio_active.to_payload(),
+            },
+            'voceCassaToDeleteId': voceid,
+        }
+
+        if debug:
+            print('Invio payload:', json.dumps(payload))
+
+        response = self.session.post(
+            url=f'{API_BASE_URL}/vocecassa/delete',
+            json=payload,
+        )
+
+        if response.status_code != 200:
+            print(f'POST per eliminazione di {voceid}: HTTP status code = {response.status_code}')
+            raise ToolBilancioHttpError('Errore HTTP in delete voce')
+        if response.text.strip() != str(voceid):
+            print(f'POST per eliminazione di {voceid} potrebbe essere fallito:', response.text)
+            raise ToolBilancioResponseError('Risposta delete voce non gestita')
+
+        if debug:
+            print('Ricevuto payload', response.text)
+
+    def request(self, method: str, url_end: str, *args, **kwargs) -> requests.Response:
+        url = f'{API_BASE_URL}{url_end}'
+        return self.session.request(method, url, *args, **kwargs)
