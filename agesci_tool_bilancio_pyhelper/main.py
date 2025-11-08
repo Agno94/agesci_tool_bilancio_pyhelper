@@ -237,7 +237,11 @@ class ToolBilancioClient:
             url=f'{API_BASE_URL}/vocecassa/save',
             json=payload,
         )
-        voce_raw = response.json()
+        try:
+            voce_raw = response.json()
+        except json.JSONDecodeError as e:
+            print(f'Error {e} per risposta {response}: {response.text}')
+            raise RuntimeError('Cannot decode json') from e
         if debug:
             print('Ricevuto payload', json.dumps(voce_raw))
 

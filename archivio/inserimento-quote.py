@@ -31,7 +31,7 @@ if not client.is_authenticated():
     print("Autenticazione fallita.")
     sys.exit(1)
 
-# -- Ricerca conto 
+# -- Ricerca conto
 numero_risultati, conti = client.get_conti_by_params(tipoconto="Banca")
 if numero_risultati == 1:
     conto_banca: ContoCassa = conti[0]

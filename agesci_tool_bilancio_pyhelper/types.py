@@ -261,12 +261,27 @@ class VoceBilancio:
     saldo: Optional[float] = None
     is_saldoiniziale: Optional[bool] = None
     is_saldoiniziale_manuale: Optional[bool] = None
+    note: Optional[str] = None
+    # Dati unità
+    unita_codice: Optional[str] = None
+    unita_nome: Optional[str] = None
+    unita_full_name: Optional[str] = None
+    # I campi della raccolta fondi non ho indigato come funzionino
+    id_raccolta_fondi: Optional[Any] = None
+    descrizione_rf: Optional[Any] = None
+    denominazione_evento_rf: Optional[Any] = None
+    data_inizio_rf: Optional[Any] = None
+    data_fine_rf: Optional[Any] = None
+    raccolta_fondi_url: Optional[Any] = None
+    is_raccolta_fondi: Optional[Any] = None
     # I campi seguenti sono prensenti nel payload ma non ho capito a che servano
     isdummy: Optional[bool] = None
     consolidata: Optional[bool] = None
     contanti: Optional[bool] = None
     cassa: Optional[float] = None
     banca: Optional[float] = None
+    data_fine_attivita_conto: Optional[Any] = None
+    conto_no_longer_active: Optional[Any] = None
 
     @classmethod
     def from_payload(
@@ -299,6 +314,19 @@ class VoceBilancio:
             contanti=raw_payload.get('contanti'),
             cassa=raw_payload.get('cassa'),
             banca=raw_payload.get('banca'),
+            unita_codice=raw_payload.get('unita_codice'),
+            unita_nome=raw_payload.get('unita_nome'),
+            unita_full_name=raw_payload.get('unitaFullName'),
+            note=raw_payload.get('note'),
+            id_raccolta_fondi=raw_payload.get('idRaccoltaFondi'),
+            descrizione_rf=raw_payload.get('descrizioneRF'),
+            denominazione_evento_rf=raw_payload.get('denominazioneEventoRF'),
+            data_inizio_rf=raw_payload.get('data_inizioRF'),
+            data_fine_rf=raw_payload.get('data_fineRF'),
+            raccolta_fondi_url=raw_payload.get('raccoltaFondiURL'),
+            is_raccolta_fondi=raw_payload.get('is_raccolta_fondi'),
+            data_fine_attivita_conto=raw_payload.get('data_fine_attivita_conto'),
+            conto_no_longer_active=raw_payload.get('conto_no_longer_active'),
         )
 
     def payload_for_post(self) -> dict:
@@ -311,6 +339,9 @@ class VoceBilancio:
             "descrizione": self.descrizione,
             "idcategoria": self.categoria.id,
             "data_operazione": self.data_operazione.isoformat(),
+            "unita_codice": self.unita_codice,
+            "unita_nome": self.unita_nome,
+            "note": self.note,
             **payload_entrata,
             **payload_uscita,
         }
